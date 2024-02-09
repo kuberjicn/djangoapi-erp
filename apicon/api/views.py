@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import BasePermission
 import json
 
-
+from api.myPgination import CustomPageNumberPagination
 
 
 
@@ -115,15 +115,17 @@ class SupplierViewSet(viewsets.ModelViewSet):
     serializer_class=SupplierSerilizer
     # permission_classes=[IsAuthenticated]
     # authentication_classes=[TokenAuthentication]
-
+    pagination_class=CustomPageNumberPagination
+    
     def list(self, request):
         filter_value = request.GET.get('filter2')
         if filter_value is None or filter_value == '':
             queryset = self.queryset.all()
         else:
             queryset = self.queryset.filter(types=filter_value)
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
+        paginated_queryset = self.paginate_queryset(queryset)
+        serializer = self.serializer_class(paginated_queryset, many=True)
+        return self.get_paginated_response(serializer.data)
     
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
