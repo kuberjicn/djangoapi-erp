@@ -1,6 +1,6 @@
 from django.urls import path,include
-from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet
-from . import views
+from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet
+
 
 from rest_framework.routers import DefaultRouter
 
@@ -13,6 +13,9 @@ router.register(r'company',CompanyViewSet)
 router.register(r'site',SiteViewSet)
 router.register(r'entity',SupplierViewSet)
 router.register(r'salary-register',SalaryRegisterViewSet)
+router.register(r'leave-register',LeaveRegisterViewSet)
+router.register(r'leave-application',LeaveApplicationViewSet)
+router.register(r'user-profile',UserProfileViewSet)
 urlpatterns = router.urls
 
 urlpatterns = [

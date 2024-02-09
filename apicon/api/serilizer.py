@@ -1,5 +1,5 @@
 
-from  api.models import Sites,Company,Supplier,SalaryRegister,LeaveRegister
+from  api.models import Sites,Company,Supplier,SalaryRegister,LeaveRegister,LeaveApplication,UserProfile
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
@@ -12,7 +12,7 @@ class CompanySerilizer(serializers.ModelSerializer):
 
 class SiteSerilizer(serializers.ModelSerializer):
     
-    compid=CompanySerilizer()
+    compid=CompanySerilizer(read_only=True)
     class Meta:
         model = Sites
         fields ='__all__' 
@@ -55,7 +55,8 @@ class SupplierSerilizer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields ='__all__' 
-      
+    def __str__(self):
+        return self.sup_name
 
     def create(self, validated_data):
         return Supplier.objects.create(**validated_data)
@@ -81,14 +82,25 @@ class SupplierSerilizer(serializers.ModelSerializer):
         return instance
 
 class SalaryRegisterSerilizer(serializers.ModelSerializer):
-    supid=SupplierSerilizer()
+    supid = SupplierSerilizer(read_only=True)
     class Meta:
         model = SalaryRegister
-        fields ='__all__' 
+        fields ="__all__"
 
 class LeaveRegisterSerializer(serializers.ModelSerializer):
-    supid=SupplierSerilizer()
+    supid=SupplierSerilizer(read_only=True)
     class Meta:
         model=LeaveRegister
         fields="__all__"
         
+class LeaveApplicationSerializer(serializers.ModelSerializer):
+    supid=SupplierSerilizer(read_only=True)
+    class Meta:
+        model=LeaveApplication
+        field='__all__'
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    #user=UserSerilizer(read_only=True)
+    class Meta:
+        model=UserProfile
+        field=['id','profile_picture']

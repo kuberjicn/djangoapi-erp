@@ -1,7 +1,7 @@
 from api.models import Sites,Company,Supplier,UserProfile,SalaryRegister,LeaveRegister
 from django.contrib.auth.models import User, Group,Permission,AbstractUser
 from rest_framework import serializers
-from .serilizer import SiteSerilizer,CompanySerilizer,UserSerilizer,GroupSerializer,SupplierSerilizer,SalaryRegisterSerilizer,LeaveRegisterSerializer
+from .serilizer import SiteSerilizer,CompanySerilizer,UserSerilizer,GroupSerializer,SupplierSerilizer,SalaryRegisterSerilizer,LeaveRegisterSerializer,LeaveApplication,UserProfileSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes,permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
@@ -170,18 +170,20 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             instance = serializer.save()
             oldsalid = request.data.get('oldsal_id', None)
-            
-            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
 
 
-
+#+++++++++++++++++++++++++++++++++++++++leave register+++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveRegisterViewSet(viewsets.ModelViewSet):
     queryset=LeaveRegister.objects.all().order_by('-ddate')
     serializer_class=LeaveRegisterSerializer
-    #permission_classes= [permissions.DjangoModelPermissions]
-    # authentication_classes=[TokenAuthentication]
-
-
-
+   
+#++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
+class LeaveApplicationViewSet(viewsets.ModelViewSet):
+    queryset=LeaveApplication.objects.all().order_by('-app_date')
+    serializer_class=LeaveRegisterSerializer
+    
+class UserProfileViewSet(viewsets.ModelViewSet):
+    queryset=UserProfile.objects.all()
+    serializer_class=UserProfileSerializer

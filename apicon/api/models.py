@@ -283,14 +283,14 @@ class DetailPayroll(models.Model):
 class SalaryRegister(models.Model):
     sal_id = models.AutoField(
         auto_created=True, primary_key=True, serialize=False)
-    supid = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    supid = models.ForeignKey(Supplier,related_name='suppliers', on_delete=models.CASCADE)
     slry_rate = models.FloatField(default=0.0)
     effect_date = models.DateField()
     ta = models.FloatField(default=0.0)
     da = models.FloatField(default=0.0)
     hra = models.FloatField(default=0.0)
     deleted = models.BooleanField(default=False)
-    post = models.CharField(max_length=150, null=True)
+    post = models.CharField(max_length=150, null=True ,blank=True)
 
     class Meta:
         db_table = 'kuberji_salaryregister'
@@ -345,7 +345,7 @@ class LeaveApplication(models.Model):
     reason = models.CharField(max_length=500)
     isapproved = models.BooleanField(default=0)
     lvs_type = models.CharField(max_length=45, default='casual')
-    contact = models.CharField(max_length=12, null=True)
+    contact = models.CharField(max_length=12,blank=True, null=True)
 
     @property
     def totdays(self):
