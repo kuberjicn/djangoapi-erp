@@ -1,7 +1,9 @@
-from api.models import Sites,Company,Supplier,UserProfile,SalaryRegister,LeaveRegister
+
+from api.models import Sites,Company,Supplier,UserProfile,SalaryRegister,LeaveRegister,LeaveApplication,Material,matgroup,Inventory,Attandance,AttandanceType
 from django.contrib.auth.models import User, Group,Permission,AbstractUser
 from rest_framework import serializers
-from .serilizer import SiteSerilizer,CompanySerilizer,UserSerilizer,GroupSerializer,SupplierSerilizer,SalaryRegisterSerilizer,LeaveRegisterSerializer,LeaveApplication,UserProfileSerializer
+from .serilizer import SiteSerilizer,CompanySerilizer,UserSerilizer,GroupSerializer,SupplierSerilizer,SalaryRegisterSerilizer,LeaveRegisterSerializer,LeaveApplicationSerializer,UserProfileSerializer
+from .serilizer import MaterialSerializer,MatGroupSerializer,InventorySerializer,AttendanceSerializer,AttTypeSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes,permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
@@ -15,10 +17,10 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import BasePermission
 import json
-
+from django_filters.rest_framework import DjangoFilterBackend
 from api.myPgination import CustomPageNumberPagination
 
-
+from rest_framework.generics import ListAPIView
 
     
 #-----------------------------user data and login--------------------------------------------
@@ -57,18 +59,6 @@ def get_permissions(request,userid):
         codenames_list = list(codenames)
         codenames_json = json.dumps(codenames_list)
         return Response({'codenames': codenames_list})
-# class UserPermission(viewsets.ModelViewSet):
-#     def get_permissions(self):
-#         user = self.request.user
-#         codenames = user.user_permissions.values_list('codename', flat=True)
-#         codenames_list = list(codenames)
-        
-#         class CustomPermission(BasePermission):
-#             def has_permission(self, request, view):
-#                 # Check if the user has any of the required permissions
-#                 return any(permission in codenames_list for permission in 'add_user')
-        
-#         return [CustomPermission()]
 
 
 
@@ -162,7 +152,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
 #+++++++++++++++++++++++++++++salary register+++++++++++++++++++++++++++
 
 class SalaryRegisterViewSet(viewsets.ModelViewSet):
-    queryset=SalaryRegister.objects.filter(deleted=0).all().order_by('supid__sup_name')
+    queryset=SalaryRegister.objects.filter(deleted=0).all()
     serializer_class=SalaryRegisterSerilizer
     def update(self, request, pk=None):
         instance = self.get_object()
@@ -181,9 +171,42 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
    
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
-    queryset=LeaveApplication.objects.all().order_by('-app_date')
-    serializer_class=LeaveRegisterSerializer
-    
+    queryset=LeaveApplication.objects.all()
+    serializer_class=LeaveApplicationSerializer
+
+#++++++++++++++++++++++++++++++++++ userprofile application++++++++++++++++++++++++++++++++++++++++++++++++++ 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset=UserProfile.objects.all()
     serializer_class=UserProfileSerializer
+
+#++++++++++++++++++++++++++++++++++ material group ++++++++++++++++++++++++++++++++++++++++++++++++++ 
+class MaterialGroupViewSet(viewsets.ModelViewSet):
+    queryset=matgroup.objects.all()
+    serializer_class=MatGroupSerializer
+
+#++++++++++++++++++++++++++++++++++ material ++++++++++++++++++++++++++++++++++++++++++++++++++ 
+class MaterialViewSet(viewsets.ModelViewSet):
+    queryset=Material.objects.all()
+    serializer_class=MaterialSerializer
+    pagination_class=CustomPageNumberPagination
+
+#++++++++++++++++++++++++++++++++++ Inventory ++++++++++++++++++++++++++++++++++++++++++++++++++ 
+class InventoryViewSet(viewsets.ModelViewSet):
+    queryset=Inventory.objects.all()
+    serializer_class=InventorySerializer
+    pagination_class=CustomPageNumberPagination
+
+#++++++++++++++++++++++++++++++++++ attandance type ++++++++++++++++++++++++++++++++++++++++++++++++++ 
+class AttTypeViewSet(viewsets.ModelViewSet):
+    queryset=AttandanceType.objects.all()
+    serializer_class=AttTypeSerializer
+
+#++++++++++++++++++++++++++++++++++ attandance  ++++++++++++++++++++++++++++++++++++++++++++++++++ 
+class AttendanceViewSet(viewsets.ModelViewSet ):
+    queryset=Attandance.objects.all()
+    serializer_class=AttendanceSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['att_date' ]
+    
+    
+

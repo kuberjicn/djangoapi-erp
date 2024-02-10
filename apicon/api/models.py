@@ -226,13 +226,13 @@ class Attandance(models.Model):
     outtime = models.TimeField(null=True)
     timediff = models.FloatField(default=0.0, null=True)
     supid = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-    typid = models.ForeignKey(
-        AttandanceType, on_delete=models.CASCADE, default=2)
+    fhType= models.ForeignKey(AttandanceType, on_delete=models.CASCADE, default=2,related_name='attandance_fh')
+    shType = models.ForeignKey(AttandanceType, on_delete=models.CASCADE, default=2,related_name='attandance_sh')
     posting_siteid = models.IntegerField(null=True, default=0)
-    lat_in = models.FloatField(default=0.0, null=True)
-    long_in = models.FloatField(default=0.0, null=True)
-    lat_out = models.FloatField(default=0.0, null=True)
-    long_out = models.FloatField(default=0.0, null=True)
+    lat_in = models.DecimalField( max_digits=20, decimal_places=2,default=0,null=True)
+    long_in = models.DecimalField( max_digits=20, decimal_places=2,default=0,null=True)
+    lat_out = models.DecimalField( max_digits=20, decimal_places=2,default=0,null=True)
+    long_out =models.DecimalField( max_digits=20, decimal_places=2,default=0,null=True)
     username = models.CharField(max_length=100, null=True)
 
     @property
@@ -294,6 +294,7 @@ class SalaryRegister(models.Model):
 
     class Meta:
         db_table = 'kuberji_salaryregister'
+        ordering = ['supid__sup_name']
        
 
 # when DeclareLeaves table update , data also updated in leavesregister to all active employee
@@ -340,7 +341,7 @@ class LeaveApplication(models.Model):
         auto_created=True, primary_key=True, serialize=False)
     app_date = models.DateField()
     from_date = models.DateField()
-    to_date = models.DateField()
+    # to_date = models.DateField()
     supid = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     reason = models.CharField(max_length=500)
     isapproved = models.BooleanField(default=0)

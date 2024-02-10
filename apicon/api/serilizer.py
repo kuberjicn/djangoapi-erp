@@ -1,5 +1,5 @@
 
-from  api.models import Sites,Company,Supplier,SalaryRegister,LeaveRegister,LeaveApplication,UserProfile
+from  api.models import Sites,Company,Supplier,SalaryRegister,LeaveRegister,LeaveApplication,UserProfile,Material,matgroup,Inventory,Attandance,AttandanceType
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
@@ -83,9 +83,19 @@ class SupplierSerilizer(serializers.ModelSerializer):
 
 class SalaryRegisterSerilizer(serializers.ModelSerializer):
     supid = SupplierSerilizer(read_only=True)
+    supid_id=serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
     class Meta:
         model = SalaryRegister
         fields ="__all__"
+        ordering=['supid__sup_name']
+    
+    def create(self, validated_data):
+        print("post")
+        supid_id = validated_data.pop('supid_id', None)
+        if supid_id :
+            supid= Supplier.objects.get(sup_id=supid_id)
+            validated_data['supid'] = supid
+        return super().create(validated_data)
 
 class LeaveRegisterSerializer(serializers.ModelSerializer):
     supid=SupplierSerilizer(read_only=True)
@@ -97,10 +107,96 @@ class LeaveApplicationSerializer(serializers.ModelSerializer):
     supid=SupplierSerilizer(read_only=True)
     class Meta:
         model=LeaveApplication
-        field='__all__'
+        fields="__all__"
+        ordering=['-app_date','supid.sup_name',]
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    #user=UserSerilizer(read_only=True)
+    user=UserSerilizer(read_only=True)
     class Meta:
         model=UserProfile
-        field=['id','profile_picture']
+        fields='__all__'
+
+class MatGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=matgroup
+        fields='__all__'
+        
+
+class MaterialSerializer(serializers.ModelSerializer):
+    #groupid_name = serializers.CharField(source='groupid.name', required=False)
+    groupid=MatGroupSerializer(read_only=True)
+    groupid_id = serializers.PrimaryKeyRelatedField(queryset=matgroup.objects.all(), source='groupid', write_only=True)
+    class Meta:
+        model=Material
+        fields='__all__'
+        ordering=['mat_name']
+
+    def create(self, validated_data):
+        print("post")
+        groupid_id = validated_data.pop('groupid_id', None)
+        if groupid_id:
+            group= matgroup.objects.get(pk=groupid_id)
+            validated_data['groupid'] = group
+        
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        groupid_id = validated_data.pop('groupid_id', None)
+        if groupid_id:
+            group= matgroup.objects.get(pk=groupid_id)
+            instance.groupid = group
+        return super().update(instance, validated_data)
+
+class InventorySerializer(serializers.ModelSerializer):
+    supid=SupplierSerilizer(read_only=True)
+    supid_id=serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
+    matid=MaterialSerializer(read_only=True)
+    matid_id=serializers.PrimaryKeyRelatedField(queryset=Material.objects.all(), source='matid', write_only=True)
+    siteid=SiteSerilizer(read_only=True)
+    siteid_id=serializers.PrimaryKeyRelatedField(queryset=Sites.objects.all(), source='siteid', write_only=True)
+    class Meta:
+        model=Inventory
+        fields='__all__'
+        ordering=['-ddate']
+
+    def create(self, validated_data):
+        print("post")
+        supid_id = validated_data.pop('supid_id', None)
+        matid_id = validated_data.pop('matid_id', None)
+        siteid_id = validated_data.pop('siteid_id', None)
+        if supid_id and matid_id and supid_id:
+            matid= Material.objects.get(mat_id=matid_id)
+            validated_data['matid'] = matid
+            supid= Supplier.objects.get(sup_id=supid_id)
+            validated_data['supid'] = supid
+            siteid= Sites.objects.get(site_id=siteid_id)
+            validated_data['siteid'] = siteid
+        return super().create(validated_data)
+    def update(self, instance, validated_data):
+        print("put")
+        supid_id = validated_data.pop('supid_id', None)
+        matid_id = validated_data.pop('matid_id', None)
+        siteid_id = validated_data.pop('siteid_id', None)
+        if supid_id and matid_id:
+            matid= Material.objects.get(mat_id=matid_id)
+            validated_data['matid'] = matid
+            supid= Supplier.objects.get(sup_id=supid_id)
+            validated_data['supid'] = supid
+            siteid= Sites.objects.get(site_id=siteid_id)
+            validated_data['siteid'] = siteid
+        return super().update(instance, validated_data)
+    
+class AttTypeSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=AttandanceType
+        fields='__all__'
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    supid=SupplierSerilizer(read_only=True)
+    fhType=AttTypeSerializer(read_only=True)
+    shType=AttTypeSerializer(read_only=True)
+    class Meta:
+        model=Attandance
+        fields='__all__'
+        ordering=['-att_date']

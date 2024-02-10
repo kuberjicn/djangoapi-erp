@@ -1,6 +1,6 @@
 from django.urls import path,include
-from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet
-
+from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet,MaterialViewSet,MaterialGroupViewSet
+from .views import InventoryViewSet,AttendanceViewSet,AttTypeViewSet
 
 from rest_framework.routers import DefaultRouter
 
@@ -16,6 +16,13 @@ router.register(r'salary-register',SalaryRegisterViewSet)
 router.register(r'leave-register',LeaveRegisterViewSet)
 router.register(r'leave-application',LeaveApplicationViewSet)
 router.register(r'user-profile',UserProfileViewSet)
+router.register(r'material-group',MaterialGroupViewSet)
+router.register(r'material',MaterialViewSet)
+router.register(r'inventory',InventoryViewSet)
+router.register(r'att-type',AttTypeViewSet)
+router.register(r'attendance',AttendanceViewSet)
+
+
 urlpatterns = router.urls
 
 urlpatterns = [
@@ -23,18 +30,4 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 #+++++++++++++++++login/permisions url+++++++++++++++++++++++++++++++++++++++++++++++++
     path('api-user-login/', UserLogIn.as_view()),
-    #path('permissions/<int:userid>', get_permissions ,name='get_all_permissions'),
-#+++++++++++++++++master url+++++++++++++++++++++++++++++++++++++++++++++++++
-    #path('company/', get_companys ,name='get_all_company'),
-    #path('company/<int:id>', get_company ,name='get_company'),
-    # path('site/', get_sites ,name='get_all_sites'),
-    # path('site/<int:id>', get_site ,name='get_site'),
-    # path('entity/', get_entities ,name='get_all_entities'),
-    # path('entity/<int:id>', get_entity ,name='get_entity'),
-    # path('salary-registers/', get_salary_registers ,name='get_all_slr'),
-    # path('salary-register/<int:id>', get_salary_register ,name='get_slr'),
-    
-#+++++++++++++++++++++++++++++++++upload++++++++++++++++++++++++++++++++++++++++
-   
-  
-]
+ ]
