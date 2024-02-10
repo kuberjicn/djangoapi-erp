@@ -103,19 +103,19 @@ class SiteViewSet(viewsets.ModelViewSet):
 class SupplierViewSet(viewsets.ModelViewSet):
     queryset=Supplier.objects.all().order_by('sup_name') 
     serializer_class=SupplierSerilizer
-    # permission_classes=[IsAuthenticated]
-    # authentication_classes=[TokenAuthentication]
     pagination_class=CustomPageNumberPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['types' ]
     
-    def list(self, request):
-        filter_value = request.GET.get('filter2')
-        if filter_value is None or filter_value == '':
-            queryset = self.queryset.all()
-        else:
-            queryset = self.queryset.filter(types=filter_value)
-        paginated_queryset = self.paginate_queryset(queryset)
-        serializer = self.serializer_class(paginated_queryset, many=True)
-        return self.get_paginated_response(serializer.data)
+    # def list(self, request):
+    #     filter_value = request.GET.get('filter2')
+    #     if filter_value is None or filter_value == '':
+    #         queryset = self.queryset.all()
+    #     else:
+    #         queryset = self.queryset.filter(types=filter_value)
+    #     paginated_queryset = self.paginate_queryset(queryset)
+    #     serializer = self.serializer_class(paginated_queryset, many=True)
+    #     return self.get_paginated_response(serializer.data)
     
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -202,11 +202,10 @@ class AttTypeViewSet(viewsets.ModelViewSet):
     serializer_class=AttTypeSerializer
 
 #++++++++++++++++++++++++++++++++++ attandance  ++++++++++++++++++++++++++++++++++++++++++++++++++ 
-class AttendanceViewSet(viewsets.ModelViewSet ):
+    
+class AttendanceViewSet(viewsets.ModelViewSet):
     queryset=Attandance.objects.all()
     serializer_class=AttendanceSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['att_date' ]
-    
-    
-
+    pagination_class=CustomPageNumberPagination
+    #filter_backends = [DjangoFilterBackend]
+    #filterset_fields = ['att_date' ]

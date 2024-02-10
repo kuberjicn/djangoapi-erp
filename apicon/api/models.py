@@ -25,7 +25,8 @@ class Material(models.Model):
 
     class Meta:
         db_table = "kuberji_materials"
-
+    def __str__(self) :
+        return self.mat_name
 
 class matgroup(models.Model):
     mg_id = models.AutoField(
@@ -34,7 +35,8 @@ class matgroup(models.Model):
 
     class Meta:
         db_table = "kuberji_materialgroup"
-
+    def __str__(self) :
+        return self.name
 
 class Supplier(models.Model):
     sup_id = models.AutoField(
@@ -76,7 +78,8 @@ class Company(models.Model):
 
     class Meta:
         db_table = "kuberji_company"
-
+    def __str__(self) :
+        return self.compname
 
 class Sites(models.Model):
     site_id = models.AutoField(
@@ -94,7 +97,8 @@ class Sites(models.Model):
 
     class Meta:
         db_table = "kuberji_site"
-
+    def __str__(self) :
+        return self.sitename
 
 class Inventory(models.Model):
     inv_id = models.AutoField(
@@ -156,7 +160,8 @@ class Activity(models.Model):
 
     class Meta:
         db_table = 'kuberji_activity'
-
+    def __str__(self) :
+        return self.actname
 
 class ActivityQty(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False)
@@ -192,6 +197,8 @@ class LabourData(models.Model):
 
     class Meta:
         db_table = 'kuberji_labour'
+    def __str__(self) :
+        return self.ddate
 
  # when DeclareHolidays update attandance also update for all active employee
 
@@ -204,6 +211,8 @@ class DeclareHolidays(models.Model):
 
     class Meta:
         db_table = 'kuberji_declareholidays'
+    def __str__(self) :
+        return self.name
 
 
 class AttandanceType(models.Model):
@@ -214,7 +223,8 @@ class AttandanceType(models.Model):
 
     class Meta:
         db_table = 'kuberji_attandancetype'
-
+    def __str__(self) :
+        return self.name
 #  new employee created at that time Attandance also updated
 
 
@@ -244,7 +254,9 @@ class Attandance(models.Model):
 
     class Meta:
         db_table = 'kuberji_attandance'
-
+        ordering=['-att_date']
+    def __str__(self) :
+        return self.att_date
 
 class PayrollList(models.Model):
     Pls_id = models.AutoField(
@@ -278,7 +290,8 @@ class DetailPayroll(models.Model):
 
     class Meta:
         db_table = 'kuberji_detailpayroll'
-
+    def __str__(self) :
+        return self.par_date
 
 class SalaryRegister(models.Model):
     sal_id = models.AutoField(
@@ -334,6 +347,8 @@ class LeaveRegister(models.Model):
 
     class Meta:
         db_table = 'kuberji_leaveregister'
+    def __str__(self) :
+        return self.ddate
 
 
 class LeaveApplication(models.Model):
@@ -341,7 +356,7 @@ class LeaveApplication(models.Model):
         auto_created=True, primary_key=True, serialize=False)
     app_date = models.DateField()
     from_date = models.DateField()
-    # to_date = models.DateField()
+    
     supid = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     reason = models.CharField(max_length=500)
     isapproved = models.BooleanField(default=0)
@@ -355,7 +370,8 @@ class LeaveApplication(models.Model):
 
     class Meta:
         db_table = 'kuberji_leaveapplication'
-
+    def __str__(self) :
+        return self.app_date
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

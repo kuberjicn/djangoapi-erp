@@ -11,7 +11,7 @@ class CompanySerilizer(serializers.ModelSerializer):
    
 
 class SiteSerilizer(serializers.ModelSerializer):
-    
+    compid_id=serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), source='compid', write_only=True)
     compid=CompanySerilizer(read_only=True)
     class Meta:
         model = Sites
@@ -44,6 +44,7 @@ class UserSerilizer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields = ['url', 'username', 'email', 'groups','first_name']
+    
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -194,9 +195,12 @@ class AttTypeSerializer(serializers.ModelSerializer):
 
 class AttendanceSerializer(serializers.ModelSerializer):
     supid=SupplierSerilizer(read_only=True)
+    supid_id=serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
     fhType=AttTypeSerializer(read_only=True)
+    fhType_id=serializers.PrimaryKeyRelatedField(queryset=AttandanceType.objects.all(), source='fhType', write_only=True)
     shType=AttTypeSerializer(read_only=True)
+    shType_id=serializers.PrimaryKeyRelatedField(queryset=AttandanceType.objects.all(), source='shType', write_only=True)
     class Meta:
         model=Attandance
         fields='__all__'
-        ordering=['-att_date']
+        
