@@ -144,7 +144,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = False  # Allow requests from any origin during development.
+CORS_ALLOW_ALL_ORIGINS = True  # Allow requests from any origin during development.
 CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']  # Allow these HTTP methods.
 CORS_ALLOW_HEADERS = [
     'Accept',
@@ -159,7 +159,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost",
-    "http://localhost:5173",
+    "http://0.0.0.0",
     "https://www.kuberji.info"
     
     

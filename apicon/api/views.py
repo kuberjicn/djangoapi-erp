@@ -21,8 +21,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api.myPgination import CustomPageNumberPagination
 
 from rest_framework.generics import ListAPIView
-
-    
+from django.core.files.base import ContentFile
+import os
 #-----------------------------user data and login--------------------------------------------
 class UserLogIn(ObtainAuthToken):
     authentication_classes=[BasicAuthentication]
@@ -84,6 +84,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     serializer_class=CompanySerilizer
     # permission_classes=[IsAuthenticated]
     # authentication_classes=[TokenAuthentication]
+   
 
 
 # -----------------site-------------------------------------
@@ -105,7 +106,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
     serializer_class=SupplierSerilizer
     pagination_class=CustomPageNumberPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['types' ]
+    filterset_fields = ['types']
     
     # def list(self, request):
     #     filter_value = request.GET.get('filter2')
@@ -128,19 +129,24 @@ class SupplierViewSet(viewsets.ModelViewSet):
             if photo_file and not isinstance(photo_file, str):
                 instance.photo.save(photo_file.name, photo_file)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("serializer.errors", status=status.HTTP_400_BAD_REQUEST)
     
     def update(self, request, pk=None):
+       #print(self.as_view)
         instance = self.get_object()
         serializer = self.serializer_class(instance, data=request.data, partial=True)
         if serializer.is_valid():
-            instance = serializer.save()
             adharphoto_file = request.data.get('adharphoto', None)
-            photo_file = request.data.get('photo', None)
+            print(adharphoto_file)
             if adharphoto_file and not isinstance(adharphoto_file, str):
-                instance.adharphoto.save(adharphoto_file.name, adharphoto_file)
+                if not os.path.exists(adharphoto_file.name):
+                    instance.adharphoto.save(adharphoto_file.name, adharphoto_file)
+            photo_file = request.data.get('photo', None)
             if photo_file and not isinstance(photo_file, str):
-                instance.photo.save(photo_file.name, photo_file)
+                if not os.path.exists(photo_file.name):
+                    instance.photo.save(photo_file.name, photo_file)
+            print(adharphoto_file,photo_file)
+            instance = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
     

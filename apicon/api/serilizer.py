@@ -8,18 +8,19 @@ class CompanySerilizer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields ='__all__' 
-   
+        ordering=['compname']
 
 class SiteSerilizer(serializers.ModelSerializer):
-    compid_id=serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), source='compid', write_only=True)
-    compid=CompanySerilizer(read_only=True)
+    #compid_id=serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), source='compid', write_only=True)
+    compid=CompanySerilizer()
     class Meta:
         model = Sites
         fields ='__all__' 
-        
+
+    
 
     def create(self, validated_data):
-         compid_data = validated_data.pop('compid', {})
+         compid_data = validated_data.pop('compid')
          compid_instance = Company.objects.get(**compid_data)
          sites_instance = Sites.objects.create(compid=compid_instance, **validated_data)
          return sites_instance
@@ -83,8 +84,8 @@ class SupplierSerilizer(serializers.ModelSerializer):
         return instance
 
 class SalaryRegisterSerilizer(serializers.ModelSerializer):
-    supid = SupplierSerilizer(read_only=True)
-    supid_id=serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
+    supid = SupplierSerilizer()
+    #supid_id=serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
     class Meta:
         model = SalaryRegister
         fields ="__all__"
