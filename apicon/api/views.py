@@ -19,7 +19,7 @@ from rest_framework.permissions import BasePermission
 import json
 from django_filters.rest_framework import DjangoFilterBackend
 from api.myPgination import CustomPageNumberPagination
-
+from django.views.generic import ListView 
 from rest_framework.generics import ListAPIView
 from django.core.files.base import ContentFile
 import os
@@ -160,6 +160,27 @@ class SupplierViewSet(viewsets.ModelViewSet):
 class SalaryRegisterViewSet(viewsets.ModelViewSet):
     queryset=SalaryRegister.objects.filter(deleted=0).all()
     serializer_class=SalaryRegisterSerilizer
+
+    def create(self, request, *args, **kwargs):
+        get_data=request.data
+        supid_data = get_data.get('supid_id')
+        print(supid_data)
+        if supid_data is not None:
+            try:
+                supid_instance = Supplier.objects.get(sup_id=supid_data) # Assuming the Supplier model has an 'id' field
+                print(supid_instance)
+            except Supplier.DoesNotExist:
+                return Response({"error": "Supplier with provided ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        salary_instance = SalaryRegister.objects.create(supid_instance, **get_data)
+        #serializer= self.get_serializer(data=request.data)
+        serializer = self.serializer_class.cre(salary_instance)
+        
+        #print(sup_id)
+        if serializer.is_valid():
+            instance = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     def update(self, request, pk=None):
         instance = self.get_object()
         serializer = self.serializer_class(instance, data=request.data, partial=True)
@@ -215,3 +236,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     pagination_class=CustomPageNumberPagination
     #filter_backends = [DjangoFilterBackend]
     #filterset_fields = ['att_date' ]
+
+class EmployeeList(ListAPIView):   #not in salary register
+    queryset = Supplier.objects.filter(types='employee').exclude(suppliers__supid_id__isnull=False)
+    serializer_class = SupplierSerilizer
+
+    

@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet,MaterialViewSet,MaterialGroupViewSet
+from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet,MaterialViewSet,MaterialGroupViewSet,EmployeeList
 from .views import InventoryViewSet,AttendanceViewSet,AttTypeViewSet
 
 from rest_framework.routers import DefaultRouter
@@ -30,4 +30,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 #+++++++++++++++++login/permisions url+++++++++++++++++++++++++++++++++++++++++++++++++
     path('api-user-login/', UserLogIn.as_view()),
+#+++++++++++++++++++get employe that not exist in salary register +++++++++++++++++++
+    path('no-employee/', EmployeeList.as_view(), name='no_employee'),
  ]

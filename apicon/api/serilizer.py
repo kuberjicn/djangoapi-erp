@@ -90,14 +90,18 @@ class SalaryRegisterSerilizer(serializers.ModelSerializer):
         model = SalaryRegister
         fields ="__all__"
         ordering=['supid__sup_name']
+
     
     def create(self, validated_data):
-        print("post")
-        supid_id = validated_data.pop('supid_id', None)
-        if supid_id :
-            supid= Supplier.objects.get(sup_id=supid_id)
-            validated_data['supid'] = supid
-        return super().create(validated_data)
+        return SalaryRegister.objects.create(supplier_id=validated_data.pop('supid_id'), **validated_data)
+    # def create(self, validated_data):
+    #     supid_data = validated_data.pop('supid_id')
+    #     supid_instance = Supplier.objects.get(supid_id=supid_data)
+    #     salary_instance = SalaryRegister.objects.create(supid=supid_instance, **validated_data)
+    #     print("kk")
+    #     return salary_instance
+        
+       
 
 class LeaveRegisterSerializer(serializers.ModelSerializer):
     supid=SupplierSerilizer(read_only=True)

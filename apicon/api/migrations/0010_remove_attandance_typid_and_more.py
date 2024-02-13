@@ -6,9 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('api', '0009_alter_leaveapplication_contact'),
-    ]
+    
 
     operations = [
         migrations.RemoveField(
