@@ -23,6 +23,7 @@ from django.views.generic import ListView
 from rest_framework.generics import ListAPIView
 from django.core.files.base import ContentFile
 import os
+from django.forms.models import model_to_dict
 #-----------------------------user data and login--------------------------------------------
 class UserLogIn(ObtainAuthToken):
     authentication_classes=[BasicAuthentication]
@@ -158,37 +159,32 @@ class SupplierViewSet(viewsets.ModelViewSet):
 #+++++++++++++++++++++++++++++salary register+++++++++++++++++++++++++++
 
 class SalaryRegisterViewSet(viewsets.ModelViewSet):
-    queryset=SalaryRegister.objects.filter(deleted=0).all()
+    queryset=SalaryRegister.objects.filter(deleted=False)
     serializer_class=SalaryRegisterSerilizer
 
-    def create(self, request, *args, **kwargs):
-        get_data=request.data
-        supid_data = get_data.get('supid_id')
-        print(supid_data)
-        if supid_data is not None:
-            try:
-                supid_instance = Supplier.objects.get(sup_id=supid_data) # Assuming the Supplier model has an 'id' field
-                print(supid_instance)
-            except Supplier.DoesNotExist:
-                return Response({"error": "Supplier with provided ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
-        salary_instance = SalaryRegister.objects.create(supid_instance, **get_data)
-        #serializer= self.get_serializer(data=request.data)
-        serializer = self.serializer_class.cre(salary_instance)
+    # def create(self, request):
+    #     print(request.data)
+    #     supid_id=request.data.pop('supid_id')
+    #     serializer = self.serializer_class(data=request.data)
         
-        #print(sup_id)
-        if serializer.is_valid():
-            instance = serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-    def update(self, request, pk=None):
-        instance = self.get_object()
-        serializer = self.serializer_class(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            instance = serializer.save()
-            oldsalid = request.data.get('oldsal_id', None)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    #     if serializer.is_valid():
+    #         #serializer.data['supid_id'] = supid_id
+    #         # Create a SalaryRegister instance
+    #         instance = serializer.save()
+    #         #instance.supid_id=supid_id
+            
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def update(self, request, pk=None):
+    #     instance = self.get_object()
+    #     serializer = self.serializer_class(instance, data=request.data, partial=True)
+    #     if serializer.is_valid():
+    #         instance = serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
 
 
 #+++++++++++++++++++++++++++++++++++++++leave register+++++++++++++++++++++++++++++++++++++++++++++++

@@ -2,6 +2,7 @@
 from  api.models import Sites,Company,Supplier,SalaryRegister,LeaveRegister,LeaveApplication,UserProfile,Material,matgroup,Inventory,Attandance,AttandanceType
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
+from django.forms.models import model_to_dict
 
 
 class CompanySerilizer(serializers.ModelSerializer):
@@ -57,8 +58,7 @@ class SupplierSerilizer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields ='__all__' 
-    def __str__(self):
-        return self.sup_name
+    
 
     def create(self, validated_data):
         return Supplier.objects.create(**validated_data)
@@ -82,26 +82,20 @@ class SupplierSerilizer(serializers.ModelSerializer):
         instance.doj = validated_data.get('doj', instance.doj)
         instance.save()
         return instance
-
+    
 class SalaryRegisterSerilizer(serializers.ModelSerializer):
-    supid = SupplierSerilizer()
-    #supid_id=serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
+    supid = SupplierSerilizer(read_only=True)
+    supid_id = serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
+    
     class Meta:
         model = SalaryRegister
-        fields ="__all__"
+        fields ='__all__'
         ordering=['supid__sup_name']
 
-    
-    def create(self, validated_data):
-        return SalaryRegister.objects.create(supplier_id=validated_data.pop('supid_id'), **validated_data)
     # def create(self, validated_data):
-    #     supid_data = validated_data.pop('supid_id')
-    #     supid_instance = Supplier.objects.get(supid_id=supid_data)
-    #     salary_instance = SalaryRegister.objects.create(supid=supid_instance, **validated_data)
-    #     print("kk")
-    #     return salary_instance
-        
-       
+    #     #print(validated_data)
+    #     return SalaryRegister.objects.create(**validated_data)
+   
 
 class LeaveRegisterSerializer(serializers.ModelSerializer):
     supid=SupplierSerilizer(read_only=True)
