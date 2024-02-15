@@ -24,6 +24,7 @@ from rest_framework.generics import ListAPIView
 from django.core.files.base import ContentFile
 import os
 from django.forms.models import model_to_dict
+from rest_framework.decorators import action
 #-----------------------------user data and login--------------------------------------------
 class UserLogIn(ObtainAuthToken):
     authentication_classes=[BasicAuthentication]
@@ -162,6 +163,37 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
     queryset=SalaryRegister.objects.filter(deleted=False)
     serializer_class=SalaryRegisterSerilizer
 
+    @action(detail=True,methods=['post'])
+    def updatesr(self, request, pk=None):
+        sr_instance=SalaryRegister.objects.get(sal_id=pk)
+        sr_instance.deleted=True
+        sr_instance.save()
+        serilizer=self.serializer_class(sr_instance)
+        return Response(serilizer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True,methods=['post'])
+    def resign(self,request,pk=None):
+        #print(pk)
+        supid_id=SalaryRegister.objects.get(sal_id=pk).supid_id
+        if supid_id:
+            #data={'supid':supid_id}
+            sup=Supplier.objects.get(sup_id=supid_id)
+            sup.Isactive=False
+            sup.save()
+            return Response({'msg':'employee resigned'}, status=status.HTTP_201_CREATED)
+        return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True,methods=['get'])
+    def history(self,request,pk=None):
+        #print(pk)
+        supid_id=SalaryRegister.objects.get(sal_id=pk).supid_id
+        if supid_id:
+            #data={'supid':supid_id}
+            salary_registers=SalaryRegister.objects.filter(supid_id=supid_id).order_by('-effect_date')
+            serializer=self.serializer_class(salary_registers,many=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
+    
     # def create(self, request):
     #     print(request.data)
     #     supid_id=request.data.pop('supid_id')
