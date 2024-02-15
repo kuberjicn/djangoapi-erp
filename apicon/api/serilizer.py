@@ -84,7 +84,7 @@ class SupplierSerilizer(serializers.ModelSerializer):
         return instance
     
 class SalaryRegisterSerilizer(serializers.ModelSerializer):
-    supid = SupplierSerilizer(read_only=True)
+    supid = SupplierSerilizer( read_only=True)
     supid_id = serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
     
     class Meta:
