@@ -162,7 +162,8 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
     queryset=SalaryRegister.objects.filter(deleted=False)
     serializer_class=SalaryRegisterSerilizer
 
-   
+    def get_queryset(self):
+         return SalaryRegister.objects.filter(deleted=False,supid__Isactive=1)
     
     
 
