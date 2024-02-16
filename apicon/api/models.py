@@ -62,8 +62,8 @@ class Supplier(models.Model):
 
     class Meta:
         db_table = "kuberji_suppliers"
-    # def __str__(self):
-    #     return self.sup_name
+    def __str__(self):
+        return self.sup_name
     
 
 class Company(models.Model):

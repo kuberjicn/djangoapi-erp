@@ -163,23 +163,30 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
     queryset=SalaryRegister.objects.filter(deleted=False)
     serializer_class=SalaryRegisterSerilizer
 
-    @action(detail=True,methods=['post'])
-    def updatesr(self, request, pk=None):
+    
+    def update(self, request, pk=None):
+        serilizer=self.serializer_class(data=request.data)
         sr_instance=SalaryRegister.objects.get(sal_id=pk)
-        sr_instance.deleted=True
-        sr_instance.save()
-        serilizer=self.serializer_class(sr_instance)
-        return Response(serilizer.data, status=status.HTTP_201_CREATED)
+        #inst_serilizer=self.serializer_class(instance= sr_instance ,data='request.data')
+        if serilizer.is_valid():
+            sr_instance.deleted=True
+            sr_instance.save()
+            sr=serilizer.save()
+            return Response({'msg':'data updated successfully'}, status=status.HTTP_201_CREATED)
+        return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True,methods=['post'])
     def resign(self,request,pk=None):
         #print(pk)
-        supid_id=SalaryRegister.objects.get(sal_id=pk).supid_id
+        sal_instance=SalaryRegister.objects.get(sal_id=pk)
+        supid_id=sal_instance.supid.sup_id
+        sal_instance.deleted=True
         if supid_id:
             #data={'supid':supid_id}
             sup=Supplier.objects.get(sup_id=supid_id)
             sup.Isactive=False
             sup.save()
+            sal_instance.save()
             return Response({'msg':'employee resigned'}, status=status.HTTP_201_CREATED)
         return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
     
