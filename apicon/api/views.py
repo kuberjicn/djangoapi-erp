@@ -226,6 +226,9 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
 class LeaveRegisterViewSet(viewsets.ModelViewSet):
     queryset=LeaveRegister.objects.all().order_by('-ddate')
     serializer_class=LeaveRegisterSerializer
+    pagination_class=CustomPageNumberPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['supid__sup_id']
    
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
