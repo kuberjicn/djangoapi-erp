@@ -162,7 +162,8 @@ class SupplierViewSet(viewsets.ModelViewSet):
 class SalaryRegisterViewSet(viewsets.ModelViewSet):
     queryset=SalaryRegister.objects.filter(deleted=False)
     serializer_class=SalaryRegisterSerilizer
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['supid__Isactive']
     
     def update(self, request, pk=None):
         serilizer=self.serializer_class(data=request.data)
@@ -180,14 +181,29 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
         #print(pk)
         sal_instance=SalaryRegister.objects.get(sal_id=pk)
         supid_id=sal_instance.supid.sup_id
-        sal_instance.deleted=True
+        #sal_instance.deleted=True
         if supid_id:
             #data={'supid':supid_id}
             sup=Supplier.objects.get(sup_id=supid_id)
             sup.Isactive=False
             sup.save()
-            sal_instance.save()
+            #sal_instance.save()
             return Response({'msg':'employee resigned'}, status=status.HTTP_201_CREATED)
+        return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True,methods=['post'])
+    def rejoin(self,request,pk=None):
+        #print(pk)
+        sal_instance=SalaryRegister.objects.get(sal_id=pk)
+        supid_id=sal_instance.supid.sup_id
+        #sal_instance.deleted=True
+        if supid_id:
+            #data={'supid':supid_id}
+            sup=Supplier.objects.get(sup_id=supid_id)
+            sup.Isactive=True
+            sup.save()
+            #sal_instance.save()
+            return Response({'msg':'employee rejoined'}, status=status.HTTP_201_CREATED)
         return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True,methods=['get'])
@@ -201,27 +217,7 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
     
-    # def create(self, request):
-    #     print(request.data)
-    #     supid_id=request.data.pop('supid_id')
-    #     serializer = self.serializer_class(data=request.data)
-        
-    #     if serializer.is_valid():
-    #         #serializer.data['supid_id'] = supid_id
-    #         # Create a SalaryRegister instance
-    #         instance = serializer.save()
-    #         #instance.supid_id=supid_id
-            
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # def update(self, request, pk=None):
-    #     instance = self.get_object()
-    #     serializer = self.serializer_class(instance, data=request.data, partial=True)
-    #     if serializer.is_valid():
-    #         instance = serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     
     
 
