@@ -196,7 +196,7 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
         supid_id=SalaryRegister.objects.get(sal_id=pk).supid_id
         if supid_id:
             #data={'supid':supid_id}
-            salary_registers=SalaryRegister.objects.filter(supid_id=supid_id).order_by('-effect_date')
+            salary_registers=SalaryRegister.objects.filter(supid_id=supid_id).order_by('-sal_id')
             serializer=self.serializer_class(salary_registers,many=True)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
