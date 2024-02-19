@@ -25,6 +25,7 @@ from django.core.files.base import ContentFile
 import os
 from django.forms.models import model_to_dict
 from rest_framework.decorators import action
+import datetime
 #-----------------------------user data and login--------------------------------------------
 class UserLogIn(ObtainAuthToken):
     authentication_classes=[BasicAuthentication]
@@ -227,9 +228,26 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
     queryset=LeaveRegister.objects.all().order_by('-ddate')
     serializer_class=LeaveRegisterSerializer
     pagination_class=CustomPageNumberPagination
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['supid__sup_id']
-   
+    #filter_backends = [DjangoFilterBackend]
+    #filterset_fields = ['supid__sup_id']
+    def list(self,request):
+        today = datetime.date.today()
+        current_year = today.year
+        queryset_current=self.queryset.filter(ddate__year=current_year)
+        queryset_old=self.queryset.filter(ddate__year__lte=current_year)
+        employees=Supplier.objects.filter(Isactive=1).all()
+        
+        for emp in employees:
+            name=emp.supid.sup_name
+            
+            
+        def get_leave_summary(sup_id):
+            opbal_calsual=queryset_old.filter(supid__sup_id=sup_id,leavetypes='casual').values('leave')
+            opbal_sick=queryset_old.filter(supid__sup_id=sup_id,leavetypes='sick').values('leave')
+            consumed_casual=queryset_current.filter(supid__sup_id=sup_id,leavetypes='casual').values('leave')
+            consumed_sick=queryset_current.filter(supid__sup_id=sup_id,leavetypes='sick').values('leave')
+            leave_summary=[{"leavetype":"casual","opbal":opbal_calsual,"consumed":consumed_casual},{"leavetype":"sick","opbal":opbal_sick,"consumed":consumed_sick}]
+            return leave_summary
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
     queryset=LeaveApplication.objects.all()
