@@ -26,6 +26,7 @@ import os
 from django.forms.models import model_to_dict
 from rest_framework.decorators import action
 import datetime
+from django.db.models import Sum
 #-----------------------------user data and login--------------------------------------------
 class UserLogIn(ObtainAuthToken):
     authentication_classes=[BasicAuthentication]
@@ -235,19 +236,30 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
         current_year = today.year
         queryset_current=self.queryset.filter(ddate__year=current_year)
         queryset_old=self.queryset.filter(ddate__year__lte=current_year)
-        employees=Supplier.objects.filter(Isactive=1).all()
+        employees=Supplier.objects.filter(Isactive=1,types="employee").order_by('sup_name').all()
+        data=[]
+        
+        def get_leave_summary(sup_id):
+            opbal_casual_result=queryset_old.filter(supid__sup_id=sup_id,lvs_type='casual').aggregate(Sum('leave'))
+            opbal_casual = opbal_casual_result['leave__sum'] if opbal_casual_result['leave__sum'] else 0
+            opbal_sick_result=queryset_old.filter(supid__sup_id=sup_id,lvs_type='sick').aggregate(Sum('leave'))
+            opbal_sick = opbal_sick_result['leave__sum'] if opbal_sick_result['leave__sum'] else 0
+            consumed_casual_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='casual').aggregate(Sum('leave'))
+            consumed_casual = consumed_casual_result['leave__sum'] if consumed_casual_result['leave__sum'] else 0
+            consumed_sick_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='sick').aggregate(Sum('leave'))
+            consumed_sick = consumed_sick_result['leave__sum'] if consumed_sick_result['leave__sum'] else 0
+            leave_summary=[{"leavetype":"casual","opbal":opbal_casual,"consumed":consumed_casual-30},{"leavetype":"sick","opbal":12,"consumed":consumed_sick-12}]
+            return leave_summary
         
         for emp in employees:
-            name=emp.supid.sup_name
+            name=emp.sup_name
+            id=emp.sup_id
+            leave_tbl=get_leave_summary(emp.sup_id)
+            get_employes={"name":name,"id":id,"year":current_year,"leave":leave_tbl}
+            data.append(get_employes)
+        return Response(data, status=status.HTTP_201_CREATED)
             
-            
-        def get_leave_summary(sup_id):
-            opbal_calsual=queryset_old.filter(supid__sup_id=sup_id,leavetypes='casual').values('leave')
-            opbal_sick=queryset_old.filter(supid__sup_id=sup_id,leavetypes='sick').values('leave')
-            consumed_casual=queryset_current.filter(supid__sup_id=sup_id,leavetypes='casual').values('leave')
-            consumed_sick=queryset_current.filter(supid__sup_id=sup_id,leavetypes='sick').values('leave')
-            leave_summary=[{"leavetype":"casual","opbal":opbal_calsual,"consumed":consumed_casual},{"leavetype":"sick","opbal":opbal_sick,"consumed":consumed_sick}]
-            return leave_summary
+        
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
     queryset=LeaveApplication.objects.all()
