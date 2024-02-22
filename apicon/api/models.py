@@ -347,6 +347,7 @@ class LeaveRegister(models.Model):
 
     class Meta:
         db_table = 'kuberji_leaveregister'
+        ordering=['ddate']
     def __str__(self) :
         return self.ddate
 

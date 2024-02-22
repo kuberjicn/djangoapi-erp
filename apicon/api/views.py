@@ -234,35 +234,51 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
         today = datetime.date.today()
         current_year = today.year
         queryset_current=self.queryset.filter(ddate__year=current_year)
-        queryset_old=self.queryset.filter(ddate__year__lte=current_year)
+        queryset_old=self.queryset.filter(ddate__year__lt=current_year)
         employees=Supplier.objects.filter(Isactive=1,types="employee").order_by('sup_name').all()
         data=[]
         
         def get_leave_summary(sup_id):
             opbal_casual_result=queryset_old.filter(supid__sup_id=sup_id,lvs_type='casual').aggregate(Sum('leave'))
-            opbal_casual = opbal_casual_result['leave__sum'] if opbal_casual_result['leave__sum'] else 0
-            opbal_sick_result=queryset_old.filter(supid__sup_id=sup_id,lvs_type='sick').aggregate(Sum('leave'))
-            opbal_sick = opbal_sick_result['leave__sum'] if opbal_sick_result['leave__sum'] else 0
-            consumed_casual_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='casual').aggregate(Sum('leave'))
-            consumed_casual = consumed_casual_result['leave__sum'] if consumed_casual_result['leave__sum'] else 0
-            consumed_sick_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='sick').aggregate(Sum('leave'))
-            consumed_sick = consumed_sick_result['leave__sum'] if consumed_sick_result['leave__sum'] else 0
-            leave_summary=[{"leavetype":"casual","opbal":opbal_casual,"consumed":consumed_casual-30},{"leavetype":"sick","opbal":12,"consumed":consumed_sick-12}]
+            past_opbal_casual = opbal_casual_result['leave__sum'] if opbal_casual_result['leave__sum'] else 0 #past year casual balance
+            
+            current_opbal_casual_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='casual',leave__gt=0).aggregate(Sum('leave'))
+            current_opbal = current_opbal_casual_result['leave__sum'] if current_opbal_casual_result['leave__sum'] else 0 #current year added leave sum
+            
+            current_casual_consumed_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='casual',leave__lt=0).aggregate(Sum('leave'))
+            current_casual_consumed = current_casual_consumed_result['leave__sum'] if current_casual_consumed_result['leave__sum'] else 0 # current year consumed sum
+            
+            consumed_sick_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='sick',leave__lt=0).aggregate(Sum('leave'))
+            consumed_sick = consumed_sick_result['leave__sum'] if consumed_sick_result['leave__sum'] else 0 #current year sick consumed sum
+            
+            leave_summary=[{"leavetype":"casual","opbal":past_opbal_casual+current_opbal,"consumed":current_casual_consumed},{"leavetype":"sick","opbal":12,"consumed":consumed_sick}] #json formation
             return leave_summary
         
         for emp in employees:
             name=emp.sup_name
             id=emp.sup_id
-            leave_tbl=get_leave_summary(emp.sup_id)
+            leave_tbl=get_leave_summary(emp.sup_id) # get data in json of leave
+            #print(leave_tbl)
             get_employes={"name":name,"id":id,"year":current_year,"leave":leave_tbl}
             data.append(get_employes)
         return Response(data, status=status.HTTP_201_CREATED)
     
     @action(detail=True,methods=['get'])        
     def get_leavebyid(self,request,pk=None):
+        
         queryset_current=self.queryset.filter(supid_id=pk)
-        serializer=self.serializer_class(queryset_current,many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        today = datetime.date.today()
+        current_year = today.year
+        stdate=str(current_year)+'-01-01'
+        opbal_casual_result=queryset_current.filter(lvs_type='casual',ddate__year__lt=current_year).aggregate(Sum('leave'))
+        past_opbal_casual = opbal_casual_result['leave__sum'] if opbal_casual_result['leave__sum'] else 0 #past year casual balance
+       
+        post_queryset=queryset_current.filter(ddate__year=current_year)
+        
+        serializer=self.serializer_class(post_queryset,many=True)
+        postdata={'opcasual':past_opbal_casual,"data":serializer.data}
+        
+        return Response(postdata, status=status.HTTP_201_CREATED)
     
     @action(detail=True,methods=['get'])        
     def get_leaveapplicationbyid(self,request,pk=None):
