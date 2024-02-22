@@ -356,7 +356,6 @@ class LeaveApplication(models.Model):
         auto_created=True, primary_key=True, serialize=False)
     app_date = models.DateField()
     from_date = models.DateField()
-    
     supid = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     reason = models.CharField(max_length=500)
     isapproved = models.BooleanField(default=0)

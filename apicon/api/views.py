@@ -18,7 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import BasePermission
 import json
 from django_filters.rest_framework import DjangoFilterBackend
-from api.myPgination import CustomPageNumberPagination
+from api.myPgination import CustomPageNumberPagination,LeavePageNumberPagination
 from django.views.generic import ListView 
 from rest_framework.generics import ListAPIView
 from django.core.files.base import ContentFile
@@ -228,9 +228,8 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
 class LeaveRegisterViewSet(viewsets.ModelViewSet):
     queryset=LeaveRegister.objects.all().order_by('-ddate')
     serializer_class=LeaveRegisterSerializer
-    pagination_class=CustomPageNumberPagination
-    #filter_backends = [DjangoFilterBackend]
-    #filterset_fields = ['supid__sup_id']
+    pagination_class=LeavePageNumberPagination
+    
     def list(self,request):
         today = datetime.date.today()
         current_year = today.year
@@ -258,8 +257,19 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
             get_employes={"name":name,"id":id,"year":current_year,"leave":leave_tbl}
             data.append(get_employes)
         return Response(data, status=status.HTTP_201_CREATED)
-            
-        
+    
+    @action(detail=True,methods=['get'])        
+    def get_leavebyid(self,request,pk=None):
+        queryset_current=self.queryset.filter(supid_id=pk)
+        serializer=self.serializer_class(queryset_current,many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True,methods=['get'])        
+    def get_leaveapplicationbyid(self,request,pk=None):
+        queryset_current=LeaveApplication.objects.filter(supid_id=pk)
+        serializer=LeaveApplicationSerializer(queryset_current,many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+   
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
     queryset=LeaveApplication.objects.all()
