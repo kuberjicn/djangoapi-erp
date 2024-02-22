@@ -234,6 +234,7 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
     queryset=LeaveApplication.objects.all()
     serializer_class=LeaveApplicationSerializer
+    pagination_class=CustomPageNumberPagination
 
 #++++++++++++++++++++++++++++++++++ userprofile application++++++++++++++++++++++++++++++++++++++++++++++++++ 
 class UserProfileViewSet(viewsets.ModelViewSet):
