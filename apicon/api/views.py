@@ -250,10 +250,8 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
             
             consumed_sick_result=queryset_current.filter(supid__sup_id=sup_id,lvs_type='sick',leave__lt=0).aggregate(Sum('leave'))
             consumed_sick = consumed_sick_result['leave__sum'] if consumed_sick_result['leave__sum'] else 0 #current year sick consumed sum
-            
             leave_summary=[{"leavetype":"casual","opbal":past_opbal_casual+current_opbal,"consumed":current_casual_consumed},{"leavetype":"sick","opbal":12,"consumed":consumed_sick}] #json formation
             return leave_summary
-        
         for emp in employees:
             name=emp.sup_name
             id=emp.sup_id
