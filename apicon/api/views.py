@@ -270,17 +270,32 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
         stdate=str(current_year)+'-01-01'
         opbal_casual_result=queryset_current.filter(lvs_type='casual',ddate__year__lt=current_year).aggregate(Sum('leave'))
         past_opbal_casual = opbal_casual_result['leave__sum'] if opbal_casual_result['leave__sum'] else 0 #past year casual balance
-       
-        post_queryset=queryset_current.filter(ddate__year=current_year)
         
-        serializer=self.serializer_class(post_queryset,many=True)
-        postdata={'opcasual':past_opbal_casual,"data":serializer.data}
+        clbal_casual_result=queryset_current.filter(lvs_type='casual',ddate__year__lte=current_year).aggregate(Sum('leave'))
+        clbal_casual = clbal_casual_result['leave__sum'] if clbal_casual_result['leave__sum'] else 0 #past year casual balance
+
+# casual query set----------------------------------------
+        casulat_queryset=queryset_current.filter(ddate__year=current_year,lvs_type='casual').order_by('ddate')
+        firstrow={'lvr_id':'','ddate':'','leave':past_opbal_casual,'lvs_type':'','la_app_id':'','disp':'Oening Balance'}
+        lastrow={'lvr_id':'','ddate':'Panding Leave','leave':clbal_casual,'lvs_type':'','la_app_id':'','disp':'Closing Balance'}
+        serializer=self.serializer_class(casulat_queryset,many=True)
+        casual_data = [firstrow] + serializer.data + [lastrow]
+# sick query set
+        sick_queryset=queryset_current.filter(ddate__year=current_year,lvs_type='sick').order_by('ddate')
+        firstrow1={'lvr_id':'','ddate':'','leave':0,'lvs_type':'','la_app_id':'','disp':'Oening Balance'}
+        lastrow1={'lvr_id':'','ddate':'Panding Leave','leave':12,'lvs_type':'','la_app_id':'','disp':'Closing Balance'}
+        serializer1=self.serializer_class(sick_queryset,many=True)
+        sick_data = [firstrow1] + serializer1.data + [lastrow1]
+
+        postdata={"casualdata":casual_data,"sickdata":sick_data}
         
         return Response(postdata, status=status.HTTP_201_CREATED)
     
     @action(detail=True,methods=['get'])        
     def get_leaveapplicationbyid(self,request,pk=None):
-        queryset_current=LeaveApplication.objects.filter(supid_id=pk)
+        today = datetime.date.today()
+        current_year = today.year
+        queryset_current=LeaveApplication.objects.filter(supid_id=pk ,from_date__year=current_year)
         serializer=LeaveApplicationSerializer(queryset_current,many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
    

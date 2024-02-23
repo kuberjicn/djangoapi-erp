@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from datetime import datetime,timedelta
 from django.contrib.auth.models import AbstractUser,User
 
 from django.conf import settings
@@ -353,20 +353,23 @@ class LeaveRegister(models.Model):
 
 
 class LeaveApplication(models.Model):
-    app_id = models.AutoField(
-        auto_created=True, primary_key=True, serialize=False)
+    app_id = models.AutoField( auto_created=True, primary_key=True, serialize=False)
     app_date = models.DateField()
     from_date = models.DateField()
-    supid = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    nosDays=models.DecimalField( max_digits=8, decimal_places=2,default=0.0)
+    supid = models.ForeignKey(Supplier, on_delete=models.RESTRICT)
     reason = models.CharField(max_length=500)
     isapproved = models.BooleanField(default=0)
     lvs_type = models.CharField(max_length=45, default='casual')
-    contact = models.CharField(max_length=12,blank=True, null=True)
+    contact = models.CharField(max_length=12, null=True)
 
     @property
-    def totdays(self):
-        delta = self.to_date - self.from_date
-        return delta.days+1
+    def to_date(self):
+        if self.nosDays==int(self.nosDays):
+            ddate = self.from_date + timedelta(days=(int(self.nosDays)-1))
+        else:
+            ddate = self.from_date + timedelta(days=(int(self.nosDays)))
+        return ddate
 
     class Meta:
         db_table = 'kuberji_leaveapplication'
