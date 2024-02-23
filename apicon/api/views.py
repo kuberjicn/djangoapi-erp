@@ -263,7 +263,8 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
     
     @action(detail=True,methods=['get'])        
     def get_leavebyid(self,request,pk=None):
-        
+        supobj=Supplier.objects.get(sup_id=pk)
+        print(supobj)
         queryset_current=self.queryset.filter(supid_id=pk)
         today = datetime.date.today()
         current_year = today.year
@@ -287,7 +288,7 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
         serializer1=self.serializer_class(sick_queryset,many=True)
         sick_data = [firstrow1] + serializer1.data + [lastrow1]
 
-        postdata={"casualdata":casual_data,"sickdata":sick_data}
+        postdata={"casualdata":casual_data,"sickdata":sick_data,"empid":pk,'supname':supobj.sup_name}
         
         return Response(postdata, status=status.HTTP_201_CREATED)
     
@@ -295,15 +296,21 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
     def get_leaveapplicationbyid(self,request,pk=None):
         today = datetime.date.today()
         current_year = today.year
-        queryset_current=LeaveApplication.objects.filter(supid_id=pk ,from_date__year=current_year)
+        supobj=Supplier.objects.get(sup_id=pk)
+        queryset_current=LeaveApplication.objects.filter(supid_id=pk ,from_date__year=current_year,isapproved=True)
         serializer=LeaveApplicationSerializer(queryset_current,many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        postdata={'data':serializer.data,'supname':supobj.sup_name,'supid':supobj.sup_id}
+        
+        return Response(postdata, status=status.HTTP_201_CREATED)
    
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
     queryset=LeaveApplication.objects.all()
     serializer_class=LeaveApplicationSerializer
     pagination_class=CustomPageNumberPagination
+    
+    
+        
 
 #++++++++++++++++++++++++++++++++++ userprofile application++++++++++++++++++++++++++++++++++++++++++++++++++ 
 class UserProfileViewSet(viewsets.ModelViewSet):
