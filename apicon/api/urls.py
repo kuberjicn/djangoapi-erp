@@ -1,6 +1,6 @@
 from django.urls import path,include
 from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet,MaterialViewSet,MaterialGroupViewSet,EmployeeList
-from .views import InventoryViewSet,AttendanceViewSet,AttTypeViewSet
+from .views import InventoryViewSet,AttendanceViewSet,AttTypeViewSet,YearList
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 
@@ -33,4 +33,5 @@ urlpatterns = [
     path('api-user-login/', UserLogIn.as_view(),name='login'),
 #+++++++++++++++++++get employe that not exist in salary register +++++++++++++++++++
     path('no-employee/', EmployeeList.as_view(), name='no_employee'),
+    path('years/', YearList, name='years'),
  ]

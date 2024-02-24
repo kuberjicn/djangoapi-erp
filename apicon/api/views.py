@@ -27,6 +27,8 @@ from django.forms.models import model_to_dict
 from rest_framework.decorators import action
 import datetime
 from django.db.models import Sum
+from django.db.models.functions import ExtractYear
+from django.http import JsonResponse
 #-----------------------------user data and login--------------------------------------------
 class UserLogIn(ObtainAuthToken):
     authentication_classes=[BasicAuthentication]
@@ -233,6 +235,12 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
     def list(self,request):
         today = datetime.date.today()
         current_year = today.year
+        years= request.GET.get('year')
+        if years is not None and years.strip():
+            current_year=str(years)
+
+
+        
         queryset_current=self.queryset.filter(ddate__year=current_year)
         queryset_old=self.queryset.filter(ddate__year__lt=current_year)
         employees=Supplier.objects.filter(Isactive=1,types="employee").order_by('sup_name').all()
@@ -268,6 +276,10 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
         queryset_current=self.queryset.filter(supid_id=pk)
         today = datetime.date.today()
         current_year = today.year
+        years= request.GET.get('year')
+        if years is not None and years.strip():
+            current_year=str(years)
+
         stdate=str(current_year)+'-01-01'
         opbal_casual_result=queryset_current.filter(lvs_type='casual',ddate__year__lt=current_year).aggregate(Sum('leave'))
         past_opbal_casual = opbal_casual_result['leave__sum'] if opbal_casual_result['leave__sum'] else 0 #past year casual balance
@@ -296,10 +308,15 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
     def get_leaveapplicationbyid(self,request,pk=None):
         today = datetime.date.today()
         current_year = today.year
+        years= request.GET.get('year')
+        print('year',years)
+        if years is not None and years.strip():
+            current_year=str(years)
         supobj=Supplier.objects.get(sup_id=pk)
-        queryset_current=LeaveApplication.objects.filter(supid_id=pk ,from_date__year=current_year,isapproved=True)
-        serializer=LeaveApplicationSerializer(queryset_current,many=True)
-        postdata={'data':serializer.data,'supname':supobj.sup_name,'supid':supobj.sup_id}
+        queryset_casual=LeaveApplication.objects.filter(supid_id=pk ,from_date__year=current_year,isapproved=True)
+        serializer_casual=LeaveApplicationSerializer(queryset_casual,many=True)
+        
+        postdata={'casual':serializer_casual.data,'supname':supobj.sup_name,'supid':supobj.sup_id}
         
         return Response(postdata, status=status.HTTP_201_CREATED)
    
@@ -352,4 +369,12 @@ class EmployeeList(ListAPIView):   #not in salary register
     queryset = Supplier.objects.filter(types='employee').exclude(suppliers__supid_id__isnull=False)
     serializer_class = SupplierSerilizer
 
-    
+
+ 
+def YearList(request):
+    distinct_years = LeaveRegister.objects.annotate(year=ExtractYear('ddate')).values('year').distinct()
+    years_list = [entry['year'] for entry in distinct_years]
+    dist_year_list=list(set(years_list))
+    print(dist_year_list)
+    return JsonResponse({'years': dist_year_list}, status=status.HTTP_200_OK)
+   
