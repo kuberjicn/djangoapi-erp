@@ -322,7 +322,7 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
    
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
-    queryset=LeaveApplication.objects.all()
+    queryset=LeaveApplication.objects.filter(app_date__year='2024').order_by('-app_date').all()
     serializer_class=LeaveApplicationSerializer
     pagination_class=CustomPageNumberPagination
     
