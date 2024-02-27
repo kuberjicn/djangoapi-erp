@@ -358,11 +358,11 @@ class AttTypeViewSet(viewsets.ModelViewSet):
 #++++++++++++++++++++++++++++++++++ attandance  ++++++++++++++++++++++++++++++++++++++++++++++++++ 
     
 class AttendanceViewSet(viewsets.ModelViewSet):
-    queryset=Attandance.objects.all()
+    queryset=Attandance.objects.order_by('supid__sup_name').all()
     serializer_class=AttendanceSerializer
     pagination_class=CustomPageNumberPagination
-    #filter_backends = [DjangoFilterBackend]
-    #filterset_fields = ['att_date' ]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['att_date' ]
 
 class EmployeeList(ListAPIView):   #not in salary register
     queryset = Supplier.objects.filter(types='employee').exclude(suppliers__supid_id__isnull=False)
