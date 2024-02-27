@@ -228,9 +228,9 @@ class SalaryRegisterViewSet(viewsets.ModelViewSet):
 
 #+++++++++++++++++++++++++++++++++++++++leave register+++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveRegisterViewSet(viewsets.ModelViewSet):
-    queryset=LeaveRegister.objects.all().order_by('-ddate')
+    queryset=LeaveRegister.objects.order_by('-ddate')
     serializer_class=LeaveRegisterSerializer
-    pagination_class=LeavePageNumberPagination
+    pagination_class=CustomPageNumberPagination
     
     def list(self,request):
         today = datetime.date.today()
@@ -238,9 +238,7 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
         years= request.GET.get('year')
         if years is not None and years.strip():
             current_year=str(years)
-
-
-        
+ 
         queryset_current=self.queryset.filter(ddate__year=current_year)
         queryset_old=self.queryset.filter(ddate__year__lt=current_year)
         employees=Supplier.objects.filter(Isactive=1,types="employee").order_by('sup_name').all()
@@ -322,10 +320,11 @@ class LeaveRegisterViewSet(viewsets.ModelViewSet):
    
 #++++++++++++++++++++++++++++++++++leave application++++++++++++++++++++++++++++++++++++++++++++++++++
 class LeaveApplicationViewSet(viewsets.ModelViewSet):
-    queryset=LeaveApplication.objects.filter(app_date__year='2024').order_by('-app_date').all()
+    queryset=LeaveApplication.objects.order_by('-app_date')
     serializer_class=LeaveApplicationSerializer
     pagination_class=CustomPageNumberPagination
-    
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['isapproved']
     
         
 

@@ -105,10 +105,11 @@ class LeaveRegisterSerializer(serializers.ModelSerializer):
         
 class LeaveApplicationSerializer(serializers.ModelSerializer):
     supid=SupplierSerilizer(read_only=True)
+    supid_id = serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
     class Meta:
         model=LeaveApplication
         fields="__all__"
-        ordering=['-app_date','supid.sup_name',]
+       
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user=UserSerilizer(read_only=True)
