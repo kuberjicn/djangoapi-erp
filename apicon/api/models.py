@@ -361,7 +361,8 @@ class LeaveApplication(models.Model):
     reason = models.CharField(max_length=500)
     isapproved = models.BooleanField(default=0)
     lvs_type = models.CharField(max_length=45, default='casual')
-    contact = models.CharField(max_length=12, null=True)
+    contact = models.CharField(max_length=12, null=True, blank=True,  default='')
+    section = models.CharField(max_length=5,  default='both')
 
     @property
     def to_date(self):
