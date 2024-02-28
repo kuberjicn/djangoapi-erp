@@ -358,12 +358,72 @@ class AttTypeViewSet(viewsets.ModelViewSet):
 #++++++++++++++++++++++++++++++++++ attandance  ++++++++++++++++++++++++++++++++++++++++++++++++++ 
     
 class AttendanceViewSet(viewsets.ModelViewSet):
-    queryset=Attandance.objects.order_by('supid__sup_name').all()
+    queryset=Attandance.objects.filter(supid__Isactive=True).order_by('supid__sup_name').all()
     serializer_class=AttendanceSerializer
     pagination_class=CustomPageNumberPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['att_date' ]
 
+    def partial_update(self,request,pk=None):
+        qset=Attandance.objects.get(att_id=pk)
+        data=request.data
+        intime='08:00:00'
+        outtime='19:00:00'
+        
+            
+        if 'fhType_id' in data:
+            newfhtype=data['fhType_id']
+            if qset.shType_id==2 & newfhtype==2:
+                qset.intime='00:00:00'
+                qset.outtime='00:00:00'
+            if qset.shType_id==3 & newfhtype==3:
+                qset.intime=intime
+                qset.outtime=outtime
+            if qset.shType_id==2 & newfhtype==3:
+                qset.intime=intime
+                qset.outtime='13:00:00'
+            if qset.shType_id==3 & newfhtype==2:
+                qset.intime='13:00:00'
+                qset.outtime=outtime
+            qset.fhType_id=newfhtype
+            
+
+        if'shType_id' in data:
+            newshtype=data['shType_id']
+            if qset.fhType_id==2 & newshtype==2:
+                qset.intime='00:00:00'
+                qset.outtime='00:00:00'
+            if qset.fhType_id==3 & newshtype==3:
+                qset.intime=intime
+                qset.outtime=outtime
+            if qset.fhType_id==2 & newshtype==3:
+                qset.intime=intime
+                qset.outtime='13:00:00'
+            if qset.fhType_id==3 & newshtype==2:
+                qset.intime='13:00:00'
+                qset.outtime=outtime
+            qset.shType_id=newshtype
+        qset.save()
+        #print(data['shType_id'])
+        return Response({'msg':'data updated successfully'}, status=status.HTTP_201_CREATED)
+        #return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False,methods=['post'])
+    def makeAllpresent(self,request,pk=None):
+        ddate= request.GET.get('att_date')
+        print(ddate)
+        newqueryset=self.queryset.filter(att_date=ddate)
+        for emp in newqueryset:
+            if emp.fhType_id==2:
+                emp.fhType_id=3
+            if emp.shType_id==2:
+                emp.shType_id=3
+            emp.intime='08:00:00'
+            emp.outtime='19:00:00'
+            emp.save()
+        return Response({'msg':'employee presented'}, status=status.HTTP_201_CREATED)
+    #return Response({'msg':'something got wrong'}, status=status.HTTP_400_BAD_REQUEST)
+#------------------------------------------custom url---------------------------------------------------
 class EmployeeList(ListAPIView):   #not in salary register
     queryset = Supplier.objects.filter(types='employee').exclude(suppliers__supid_id__isnull=False)
     serializer_class = SupplierSerilizer
