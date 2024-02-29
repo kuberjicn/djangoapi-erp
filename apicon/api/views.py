@@ -510,11 +510,28 @@ def YearList(request):
 class PayrollListViewSet(viewsets.ModelViewSet):
     queryset=PayrollList.objects.all().order_by('st_date') 
     serializer_class=PayRollListSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['st_date__year' ]
+    
+    def list(self,request):
+        today = datetime.date.today()
+        current_year = today.year
+        yr=request.GET.get('year',None)
+        print(yr)
+        if yr==None:
+            yr=current_year
+        nq=self.queryset.filter(st_date__year=yr)
+        nq_serialzer=PayRollListSerializer(nq,many=True)
+        return Response(nq_serialzer.data, status=status.HTTP_200_OK)
+
 
 class DetailPayRillViewSet(viewsets.ModelViewSet):
     queryset=DetailPayroll.objects.all().order_by('supid__sup_name') 
     serializer_class=DetailPayRollSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['Plsid_id' ]
+    
+    def list(self,request):
+        id=request.GET.get('plsid',None)
+        nq=self.queryset.filter(Plsid_id=id)
+        nq_serialzer=DetailPayRollSerializer(nq,many=True)
+        
+        return Response(nq_serialzer.data, status=status.HTTP_200_OK)
