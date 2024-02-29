@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet,MaterialViewSet,MaterialGroupViewSet,EmployeeList
+from .views import UserLogIn,UserViewSet,GroupViewSet,LeaveRegisterViewSet,CompanyViewSet,SiteViewSet,SupplierViewSet,SalaryRegisterViewSet,LeaveApplicationViewSet,UserProfileViewSet,MaterialViewSet,MaterialGroupViewSet,EmployeeList,PayrollListViewSet,DetailPayRillViewSet
 from .views import InventoryViewSet,AttendanceViewSet,AttTypeViewSet,YearList
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
@@ -21,8 +21,8 @@ router.register(r'material',MaterialViewSet)
 router.register(r'inventory',InventoryViewSet)
 router.register(r'att-type',AttTypeViewSet)
 router.register(r'attendance',AttendanceViewSet)
-
-
+router.register(r'pay-roll',PayrollListViewSet)
+router.register(r'detail-pay-roll',DetailPayRillViewSet)
 urlpatterns = router.urls
 
 urlpatterns = [

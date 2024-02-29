@@ -1,9 +1,9 @@
 
-from api.models import Sites,Company,Supplier,UserProfile,SalaryRegister,LeaveRegister,LeaveApplication,Material,matgroup,Inventory,Attandance,AttandanceType
+from api.models import Sites,Company,Supplier,UserProfile,SalaryRegister,LeaveRegister,LeaveApplication,Material,matgroup,Inventory,Attandance,AttandanceType,PayrollList,DetailPayroll
 from django.contrib.auth.models import User, Group,Permission,AbstractUser
 from rest_framework import serializers
 from .serilizer import SiteSerilizer,CompanySerilizer,UserSerilizer,GroupSerializer,SupplierSerilizer,SalaryRegisterSerilizer,LeaveRegisterSerializer,LeaveApplicationSerializer,UserProfileSerializer
-from .serilizer import MaterialSerializer,MatGroupSerializer,InventorySerializer,AttendanceSerializer,AttTypeSerializer
+from .serilizer import MaterialSerializer,MatGroupSerializer,InventorySerializer,AttendanceSerializer,AttTypeSerializer,PayRollListSerializer,DetailPayRollSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes,permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
@@ -29,6 +29,7 @@ import datetime
 from django.db.models import Sum
 from django.db.models.functions import ExtractYear
 from django.http import JsonResponse
+from datetime import  timedelta
 #-----------------------------user data and login--------------------------------------------
 class UserLogIn(ObtainAuthToken):
     authentication_classes=[BasicAuthentication]
@@ -326,7 +327,73 @@ class LeaveApplicationViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['isapproved']
     
+    def partial_update(self,request,pk=None):
+        approve=request.data.get('isapproved')
+        app_instance=LeaveApplication.objects.get(app_id=pk)
+        app_instance.isapproved=approve
+        leave_days=app_instance.nosDays
+        from_date=app_instance.from_date
+        leave_type=app_instance.lvs_type
+        section=app_instance.section
+        supid=app_instance.supid.sup_id
+        nosdays=int(app_instance.nosDays)
+        if approve:
+            if leave_type=='casual':
+                lvsid=4
+            else:
+                lvsid=5
+        else:
+            lvsid=2
         
+        if section == 'both':
+            to_date=from_date + timedelta(days=nosdays)
+            for i in range(nosdays):
+                att_instance={
+                    'att_date':from_date + timedelta(days=i),
+                    'supid_id':supid,
+                    'username':'sys',
+                    'fhType_id':lvsid,
+                    'shType_id':lvsid,
+                    'intime':'00:00:00',
+                    'outtime':'00:00:00',
+                }
+                Attandance.objects.update_or_create(att_date=att_instance['att_date'],supid_id=supid,defaults=att_instance)
+        elif section=='sh':
+            att_instance={
+                    'att_date':from_date,
+                    'supid_id':supid,
+                    'username':'sys',
+                    'shType_id':lvsid,
+                    'intime':'08:00:00',
+                    'outtime':'13:00:00',
+                }
+            to_date=from_date
+            Attandance.objects.update_or_create(att_date=from_date,supid_id=supid, defaults=att_instance)
+        elif section=='fh':
+            att_instance={
+                    'att_date':from_date,
+                    'supid_id':supid,
+                    'username':'sys',
+                    'fhType_id':lvsid,
+                    'intime':'14:00:00',
+                    'outtime':'19:00:00',
+                }
+            to_date=from_date
+            Attandance.objects.update_or_create(att_date=from_date,supid_id=supid, defaults=att_instance)
+        if approve:
+            leave_register_istance={
+                'ddate':from_date,
+                'leave':leave_days *-1 ,
+                'lvs_type':leave_type,
+                'supid_id':supid,
+                'la_app_id':pk,
+                'disp':f"{leave_days} day/days leave granted from {from_date} to {to_date}"
+            }
+            LeaveRegister.objects.update_or_create(la_app_id=leave_register_istance['la_app_id'], defaults=leave_register_istance)
+        else:
+            LeaveRegister.objects.filter(la_app_id=pk).delete()
+        app_instance.save()
+        return Response({'msg':'data updated successfully'}, status=status.HTTP_201_CREATED) 
 
 #++++++++++++++++++++++++++++++++++ userprofile application++++++++++++++++++++++++++++++++++++++++++++++++++ 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -373,35 +440,37 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             
         if 'fhType_id' in data:
             newfhtype=data['fhType_id']
-            if qset.shType_id==2 & newfhtype==2:
+            print(qset.shType_id,newfhtype)
+            if qset.shType_id==2 and newfhtype==2:
                 qset.intime='00:00:00'
                 qset.outtime='00:00:00'
-            if qset.shType_id==3 & newfhtype==3:
+            if qset.shType_id==3 and newfhtype==3:
                 qset.intime=intime
                 qset.outtime=outtime
-            if qset.shType_id==2 & newfhtype==3:
+            if qset.shType_id==2 and newfhtype==3:
                 qset.intime=intime
                 qset.outtime='13:00:00'
-            if qset.shType_id==3 & newfhtype==2:
-                qset.intime='13:00:00'
+            if qset.shType_id==3 and newfhtype==2:
+                qset.intime='14:00:00'
                 qset.outtime=outtime
             qset.fhType_id=newfhtype
             
 
         if'shType_id' in data:
             newshtype=data['shType_id']
-            if qset.fhType_id==2 & newshtype==2:
+            print(qset.fhType_id,newshtype)
+            if qset.fhType_id==2 and newshtype==2:
                 qset.intime='00:00:00'
                 qset.outtime='00:00:00'
-            if qset.fhType_id==3 & newshtype==3:
+            if qset.fhType_id==3 and newshtype==3:
                 qset.intime=intime
                 qset.outtime=outtime
-            if qset.fhType_id==2 & newshtype==3:
+            if qset.fhType_id==2 and newshtype==3:
+                qset.intime='14:00:00'
+                qset.outtime=outtime
+            if qset.fhType_id==3 and newshtype==2:
                 qset.intime=intime
                 qset.outtime='13:00:00'
-            if qset.fhType_id==3 & newshtype==2:
-                qset.intime='13:00:00'
-                qset.outtime=outtime
             qset.shType_id=newshtype
         qset.save()
         #print(data['shType_id'])
@@ -437,3 +506,15 @@ def YearList(request):
     print(dist_year_list)
     return JsonResponse({'years': dist_year_list}, status=status.HTTP_200_OK)
    
+#+++++++++++++++++++++++++++++++++++++++++payrol+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+class PayrollListViewSet(viewsets.ModelViewSet):
+    queryset=PayrollList.objects.all().order_by('st_date') 
+    serializer_class=PayRollListSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['st_date__year' ]
+
+class DetailPayRillViewSet(viewsets.ModelViewSet):
+    queryset=DetailPayroll.objects.all().order_by('supid__sup_name') 
+    serializer_class=DetailPayRollSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['Plsid_id' ]

@@ -1,5 +1,5 @@
 
-from  api.models import Sites,Company,Supplier,SalaryRegister,LeaveRegister,LeaveApplication,UserProfile,Material,matgroup,Inventory,Attandance,AttandanceType
+from  api.models import Sites,Company,Supplier,SalaryRegister,LeaveRegister,LeaveApplication,UserProfile,Material,matgroup,Inventory,Attandance,AttandanceType,PayrollList,DetailPayroll
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from django.forms.models import model_to_dict
@@ -92,9 +92,7 @@ class SalaryRegisterSerilizer(serializers.ModelSerializer):
         fields ='__all__'
         ordering=['supid__sup_name']
 
-    # def create(self, validated_data):
-    #     #print(validated_data)
-    #     return SalaryRegister.objects.create(**validated_data)
+   
    
 
 class LeaveRegisterSerializer(serializers.ModelSerializer):
@@ -204,3 +202,16 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model=Attandance
         fields='__all__'
         
+class PayRollListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=PayrollList
+        fields="__all__"
+
+class DetailPayRollSerializer(serializers.ModelSerializer):
+    supid=SupplierSerilizer(read_only=True)
+    supid_id = serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), source='supid', write_only=True)
+    Plsid=PayRollListSerializer(read_only=True)
+    Plsid_id = serializers.PrimaryKeyRelatedField(queryset=PayrollList.objects.all(), source='Plsid', write_only=True)
+    class Meta:
+        model=DetailPayroll
+        fields="__all__"
