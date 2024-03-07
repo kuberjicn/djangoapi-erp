@@ -88,7 +88,7 @@ DATABASES = {
         'NAME': 'kuberjierpdb',
         'USER': 'kuberji',
         'PASSWORD': 'chan2210CN',
-        'HOST':'kuberji.com',
+        'HOST':'192.168.0.55',
         'PORT':'3306',
         }
 }
